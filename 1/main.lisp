@@ -1,25 +1,9 @@
 (defun first-digit (line)
-	(loop for char across line do
-		(let ((digit (digit-char-p char))) 
-			(if (not (eq digit nil))
-				(return digit)
-				()
-			)
-		)
-	)
+	(digit-char-p (find-if #'digit-char-p line))
 )
 
 (defun last-digit (line)
-	(let ((digit 0) (last-digit 0)) 
-		(loop for char across line do
-			(setq digit (digit-char-p char))
-			(if (not (eq digit nil))
-				(setq last-digit digit)
-				()
-			)
-		)
-		last-digit
-	)
+	(digit-char-p (find-if #'digit-char-p line :from-end t))
 )
 
 (defun process-line (line)
