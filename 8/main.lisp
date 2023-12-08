@@ -36,7 +36,39 @@
 					(incf steps)
 					(when (string= (first node) "ZZZ")
 						(return-from solve1 steps)))))))
+
+(defun starting-nodes (nodes)
+	(remove-if-not
+		(lambda (node)
+			(eq (char (first node) (- (length (first node)) 1)) #\A))
+		nodes))
+
+(defun finished (node)
+	(eq (char (first node) (- (length (first node)) 1)) #\Z))
+
+(defun dist-for-node (node nodes directions)
+	(let ((steps 0))
+		(loop
+			(loop for instr across directions do
+				(setf node (do-instruction node nodes instr))
+				(incf steps)
+				(when (finished node)
+					(print (list node steps))
+					(return-from dist-for-node steps))))))
 	
+
+(defun solve2 (lines)
+	(let (
+			(directions (first lines))
+			(nodes (parse-nodes (rest (rest lines))))
+			(steps 0))
+		(let ((current-nodes (starting-nodes nodes)))
+			(apply 'lcm
+				(mapcar
+					(lambda (node)
+						(dist-for-node node nodes directions))
+					current-nodes)))))
+
 
 (let (lines (list))
 	(loop
@@ -44,5 +76,5 @@
 			(when (eq line nil) (return))
 			(setf lines (append lines (list line))))))
 
-	(print (solve1 lines)))
-	;(print (solve2 lines)))
+	;(print (solve1 lines)))
+	(print (solve2 lines)))
