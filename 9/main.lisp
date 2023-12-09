@@ -20,9 +20,24 @@
 		0
 		(+ (car (last line)) (predict-line (reduce-line line)))))
 
+(defun predict-line-backwards (line)
+	(if
+		(every
+			(lambda (l)
+				(eq 0 l))
+			line)
+		0
+		(- (first line) (predict-line-backwards (reduce-line line)))))
+
+
 (defun solve1 (lines)
 	(apply '+
 		(mapcar 'predict-line
+			(mapcar 'parse-line lines))))
+
+(defun solve2 (lines)
+	(apply '+
+		(mapcar 'predict-line-backwards
 			(mapcar 'parse-line lines))))
 
 (let (lines (list))
@@ -31,5 +46,5 @@
 			(when (eq line nil) (return))
 			(setf lines (append lines (list line))))))
 
-	(print (solve1 lines)))
-	;(print (solve2 lines)))
+	;(print (solve1 lines)))
+	(print (solve2 lines)))
