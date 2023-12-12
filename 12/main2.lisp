@@ -71,10 +71,22 @@
 	(loop for placement from 0 to (min (- (length (first line)) (first (second line))) (first-spring-position (first line)))
 		sum
 			(if (valid-placement (first line) placement (first (second line)))
-				(solve-line (list
+				(solve-line-fast (list
 					(safe-subseq (first line) (+ 1 placement (first (second line))))
 					(rest (second line))))
 				0)))
+
+(defvar *memo-table* (make-hash-table :test 'equal))
+
+(defun solve-line-fast (line)
+	(let ((found (gethash line *memo-table*)))
+		(if found
+			(progn
+				found)
+			(let ((value (solve-line line)))
+				(setf (gethash line *memo-table*) value)
+				value))))
+
 
 (defun unfold-str (str)
 	(let ((res str))
@@ -103,6 +115,8 @@
 		(mapcar 'solve-line-non-rec
 			(mapcar 'unfold-line
 				(parse-lines lines)))))
+	;(apply '+
+	;	(mapcar 'solve-line-non-rec (parse-lines lines))))
 
 (let (lines (list))
 	(loop
