@@ -30,11 +30,12 @@
 	(loop for i from 0 below (length (first pattern)) collect
 		(extract-column pattern i)))
 
+(defun row-reflections (pattern)
+	(loop for i from 1 below (list-length pattern)
+		when (is-row-mirror pattern i) collect i))
+
 (defun solve-rows (pattern)
-	(loop for i from 1 below (list-length pattern) sum
-		(if (is-row-mirror pattern i)
-			i
-			0)))
+	(apply '+ (row-reflections pattern)))
 
 (defun solve-columns (pattern)
 	(solve-rows (transpose-pattern pattern)))
@@ -48,10 +49,52 @@
 	(loop for pattern in (parse-lines lines) sum
 		(solve-pattern pattern)))
 
+(defun pattern-get (pattern row column)
+	(char (nth row pattern) column))
+
+(defun pattern-set (pattern row column value)
+	(setf (char (nth row pattern) column) value))
+
+(defun deep-copy (pattern)
+	(mapcar 'copy-seq pattern))
+
+(defun alter-pattern (pattern row column)
+	(let ((copy (deep-copy pattern)))
+		(if (char= #\# (pattern-get copy row column))
+			(pattern-set copy row column #\.)
+			(pattern-set copy row column #\#))
+		copy))
+
+(defun new-element (altered old)
+	(loop for element in altered do
+		(when (not (find element old))
+			(return-from new-element element)))
+	nil)
+
+(defun solve-fixed-pattern (pattern)
+	(loop for row from 0 below (list-length pattern) do
+		(loop for column from 0 below (length (first pattern)) do
+			(let ((altered (alter-pattern pattern row column)))
+				(cond
+					((and
+						(> (solve-rows altered) 0)
+						(not (equal (row-reflections altered) (row-reflections pattern))))
+							(return-from solve-fixed-pattern (* 100 (new-element (row-reflections altered) (row-reflections pattern)))))
+					((and
+						(> (solve-rows (transpose-pattern altered)) 0)
+						(not (equal (row-reflections (transpose-pattern altered)) (row-reflections (transpose-pattern pattern)))))
+							(return-from solve-fixed-pattern (new-element (row-reflections (transpose-pattern altered)) (row-reflections (transpose-pattern pattern)))))))))
+	(print (list "not found" pattern))
+	nil)
+
+(defun solve2 (lines)
+	(loop for pattern in (parse-lines lines) sum
+		(solve-fixed-pattern pattern)))
+
 (let (lines (list))
 	(loop
 		(let ((line (read-line *standard-input* nil nil))) (progn
 			(when (eq line nil) (return))
 			(setf lines (append lines (list line))))))
-	(print (solve1 lines)))
-	;(print (solve2 lines)))
+	;(print (solve1 lines)))
+	(print (solve2 lines)))
