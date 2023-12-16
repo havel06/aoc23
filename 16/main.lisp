@@ -150,10 +150,30 @@
 			(write-line line))
 		(mask-count mask)))
 
+(defun configs (width height)
+	(append
+		(loop for x from 0 below width collect
+			(list x 0 0 1))
+		(loop for x from 0 below width collect
+			(list x (- height 1) 0 -1))
+		(loop for y from 0 below height collect
+			(list 0 y 1 0))
+		(loop for y from 0 below height collect
+			(list (- width 1) y -1 0))))
+
+(defun solve2 (lines)
+	(apply 'max
+		(mapcar
+			(lambda (config)
+				(let ((mask (make-mask lines)))
+					(process mask lines (nth 0 config) (nth 1 config) (nth 2 config) (nth 3 config))
+					(mask-count mask)))
+			(configs (length (first lines)) (list-length lines)))))
+
 (let (lines (list))
 	(loop
 		(let ((line (read-line *standard-input* nil nil))) (progn
 			(when (eq line nil) (return))
 			(setf lines (append lines (list line))))))
-	(print (solve1 lines)))
-	;(print (solve2 lines)))
+	;(print (solve1 lines)))
+	(print (solve2 lines)))
